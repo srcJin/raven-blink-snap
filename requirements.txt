@@ -1,0 +1,2 @@
+# Install the official Raven SDK separately. See README.md.
+PySide6>=6.6,<7

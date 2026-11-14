@@ -1,0 +1,10 @@
+.venv/
+raven-framework/
+__pycache__/
+*.pyc
+.env
+.env.*
+.DS_Store
+photos/
+!.env.example
+media/narration.wav
