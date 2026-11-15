@@ -1,60 +1,31 @@
-"""Render the actual Qt app with deterministic simulated tracking-loss input."""
-import os
-os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
+"""Record the official visible Raven simulator; no custom video composition."""
+import re
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
-from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QColor, QFont, QImage, QPainter
-from PySide6.QtCore import QRectF
-from main import BlinkSnap
+ROOT=Path(__file__).resolve().parent
+DURATION=35.72
 
-FPS = 25
-DURATION = 34
-app = QApplication([])
-now = [0.0]
-with tempfile.TemporaryDirectory() as photos:
-    widget = BlinkSnap(output=photos,clock=lambda:now[0])
-    widget.timer.stop()
-    widget.show()
-    app.processEvents()
-    target=Path('media')
-    target.mkdir(exist_ok=True)
-    output=subprocess.Popen(['ffmpeg','-y','-f','rawvideo','-pixel_format','rgba','-video_size','1280x900','-framerate',str(FPS),'-i','-','-c:v','libx264','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart','media/demo-silent.mp4'],stdin=subprocess.PIPE,stderr=subprocess.DEVNULL)
-    actions={125:widget.simulate_blink,136:widget.simulate_blink,275:widget.toggle_pause,350:widget.toggle_pause,460:widget.simulate_blink,471:widget.simulate_blink,700:widget.toggle_pause}
-    screens={25:'01-ready.png',134:'02-first-blink.png',150:'03-saved.png',290:'04-paused.png'}
-    captions=[(0,'Stay in the moment.','A hands-free camera concept for Raven Prism.'),(4,'Two short tracking losses.','Press B twice to simulate two blinks.'),(6,'Moment, kept.','A photo is saved locally, with clear confirmation.'),(11,'Pause whenever you need.','Gestures only work while the camera is armed.'),(14,'Built for deliberate moments.','Short-loss filtering, recovery checks and a cooldown.'),(18,'Ready for another memory.','The same detector runs in demo and device modes.'),(24,'Your photos stay with you.','Choose Use camera for a real camera capture.'),(28,'BLINKSNAP','Two blinks. One memory.')]
-    for frame in range(FPS*DURATION):
-        now[0]=frame/FPS
-        if frame in actions:
-            actions[frame]()
-        # 50 Hz polling matches normal app operation.
-        widget.tick()
-        now[0]+=0.02
-        widget.tick()
-        app.processEvents()
-        shot=widget.app.grab().toImage()
-        if frame in screens:
-            assert shot.save(str(target/screens[frame]))
-        canvas=QImage(1280,900,QImage.Format.Format_RGBA8888)
-        canvas.fill(QColor('#07120F'))
-        p=QPainter(canvas)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        p.drawImage(QRectF(320,45,640,640),shot)
-        p.setPen(QColor('#EDC181'))
-        p.setFont(QFont('Helvetica',12))
-        p.drawText(48,52,'RAVEN MINI HACK  /  BLINKSNAP')
-        p.drawText(48,855,'SIMULATOR DEMO · ILLUSTRATED SCENE · NO DEVICE FOOTAGE')
-        caption=next(c for c in reversed(captions) if now[0]>=c[0])
-        p.setPen(QColor('#ECEAE3'))
-        p.setFont(QFont('Helvetica',26,QFont.Weight.Medium))
-        p.drawText(320,744,caption[1])
-        p.setFont(QFont('Helvetica',16))
-        p.setPen(QColor('#9DABA5'))
-        p.drawText(320,782,caption[2])
-        p.end()
-        output.stdin.write(bytes(canvas.constBits()))
-    output.stdin.close()
-    assert output.wait()==0
-    assert len(list(Path(photos).glob('*.jpg')))==2, 'Demo must capture exactly two photos'
-    print('Rendered 34 seconds and four app screenshots. Verified two saved photos.')
+def capture():
+    audio=ROOT/'media/narration.wav'
+    if not audio.exists():
+        raise SystemExit('Generate Cartesia narration first: node narrate.mjs')
+    duration=max(34,float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',str(audio)],text=True).strip())+0.5)
+    with tempfile.TemporaryDirectory(prefix='blinksnap-official-') as folder:
+        recording=Path(folder)/'official.mp4'
+        result=subprocess.run([sys.executable,str(ROOT/'live_demo.py'),'--record-output',str(recording),'--exit-after-save','--duration',str(duration)],cwd=ROOT,text=True,capture_output=True,timeout=90)
+        print(result.stdout,end='')
+        if result.returncode or not recording.exists():
+            print(result.stderr,file=sys.stderr)
+            raise SystemExit('Official simulator recording failed')
+        record_ns=int(re.search(r'RECORD_T0 monotonic_ns=(\d+)',result.stdout)[1])
+        demo_ns=int(re.search(r'DEMO_T0 monotonic_ns=(\d+)',result.stdout)[1])
+        offset=(demo_ns-record_ns)/1e9
+        silent=ROOT/'media/demo-silent.mp4'
+        subprocess.run(['ffmpeg','-y','-v','error','-ss',str(offset),'-i',str(recording),'-t',str(duration),'-an','-c:v','libx264','-crf','18','-pix_fmt','yuv420p','-movflags','+faststart',str(silent)],check=True)
+        subprocess.run(['ffmpeg','-y','-v','error','-i',str(silent),'-i',str(audio),'-map','0:v','-map','1:a','-af','apad','-t',str(duration),'-c:v','copy','-c:a','aac','-b:a','160k','-movflags','+faststart',str(ROOT/'media/demo.mp4')],check=True)
+        print('Created official simulator video with English narration.')
+
+if __name__=='__main__':
+    capture()

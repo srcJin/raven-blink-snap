@@ -125,7 +125,7 @@ class View(QWidget):
         text(8,445,a.status,15,ACCENT if a.phase=='saved' else MUTED)
         if a.phase == 'capturing':
             p.setPen(QPen(QColor(ACCENT),3))
-            p.drawArc(QRectF(270,263,40,40),int(-a.animation*180*16),230*16)
+            p.drawArc(QRectF(270,263,40,40),int((-a.animation*180 % 360)*16),230*16)
         p.end()
 
 

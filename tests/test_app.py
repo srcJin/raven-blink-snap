@@ -41,3 +41,14 @@ class AppTests(unittest.TestCase):
             self.assertEqual(app.phase,'saved')
             self.assertTrue(app.last_saved.exists())
             app.close()
+
+    def test_capture_spinner_handles_long_system_uptime(self):
+        with tempfile.TemporaryDirectory() as folder:
+            app = BlinkSnap(output=folder, clock=lambda: 9_000_000.0)
+            app.timer.stop()
+            app.phase = 'capturing'
+            app.animation = app.clock()
+            app.show()
+            self.qt.processEvents()
+            self.assertFalse(app.view.grab().isNull())
+            app.close()

@@ -8,7 +8,7 @@ A hands-free camera concept for Raven Prism. Two short losses of eye tracking, e
 
 [Watch the English-narrated simulator demo](media/demo.mp4)
 
-The narrated demo uses Cartesia narration and actual application frames with simulated input.
+The narrated demo uses Cartesia narration and a direct official Raven simulator recording with simulated input.
 
 ## Try it
 
@@ -80,9 +80,11 @@ Photos use unique filenames and an atomic temporary-file rename. Captures are lo
 .venv/bin/python capture_demo.py
 ```
 
-`capture_demo.py` requires FFmpeg on PATH. It renders the real Qt app with a deterministic clock and simulated blink events, writes four PNG screenshots and a 34-second silent MP4, and asserts that exactly two photos were saved. Temporary demo photos are removed automatically. A persistent label identifies the video as a simulator demo.
+`capture_demo.py` requires a visible desktop and FFmpeg. It launches `live_demo.py` through the official `RunApp.run()` simulator, drives the same simulated blink actions using Qt timers, and records through Raven's built-in Record button. It trims the measured preroll and adds the existing English narration. It adds no external titles, captions, borders, or backgrounds. The scene background and waveguide appearance come directly from the official simulator.
 
-The narration workflow uses Cartesia to produce English speech. The narration transcript is in `media/narration.txt`. Generate it with Node 20 or newer after rendering the silent video. Copy `.env.example` to a private `.env`, add your Cartesia key, then run `node narrate.mjs`. An external file is supported with `node narrate.mjs --env-file /path/to/private.env`. The script extends the last frame if the narration needs additional time. It uses the [Cartesia speech bytes API](https://docs.cartesia.ai/api-reference/tts/bytes).
+Generate narration first with Node 20 or newer. Copy `.env.example` to a private `.env`, add your Cartesia key, then run `node narrate.mjs`. An external file is supported with `node narrate.mjs --env-file /path/to/private.env`. Then run `.venv/bin/python capture_demo.py` to record the native simulator and create the final video. The four PNGs are detailed application UI reference screenshots.
+
+The narration uses the [Cartesia speech bytes API](https://docs.cartesia.ai/api-reference/tts/bytes). The final video shows the official simulator with synthetic blink input, not Raven hardware footage. A long-system-uptime rendering regression supplements the detector and storage tests, for twelve tests in total.
 
 ## Project files
 
@@ -90,9 +92,17 @@ The narration workflow uses Cartesia to produce English speech. The narration tr
 - `blink.py` implements the tracking-loss state machine.
 - `tests/test_app.py` checks local storage, pause behavior, and recovery after a write failure.
 - `tests/test_blink.py` covers two-blink capture, single blink, noise, prolonged loss, timing gaps, recovery, cooldown, startup loss, and a stalled poll loop.
-- `capture_demo.py` produces the simulator media from the actual application.
+- `capture_demo.py` records the official simulator; `live_demo.py` drives the timed application actions.
 - `media/` contains screenshots, narrated video, and narration text.
+
+## Official simulator view
+
+![Official Raven simulator recording frame](media/official-simulator.png)
+
+The final video is recorded directly through the official Raven simulator. No external titles, captions, or decorative background are added. The other PNGs provide detailed application UI references.
 
 ## License
 
 Application code and the original illustrated demo scene are MIT licensed. Raven Framework is a separately installed proprietary dependency governed by its own license. Its source code is not included in this repository.
+
+Official simulator visuals include Raven-provided background assets, which retain their original rights. The MIT license covers the original application code and original artwork, not third-party simulator assets.

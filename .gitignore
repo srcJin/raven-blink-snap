@@ -8,3 +8,6 @@ __pycache__/
 photos/
 !.env.example
 media/narration.wav
+
+.demo-photos/
+media/official-simulator-raw.mp4
