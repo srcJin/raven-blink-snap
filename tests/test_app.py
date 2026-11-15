@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from PySide6.QtWidgets import QApplication
-from main import BlinkShot
+from main import BlinkSnap
 
 
 class AppTests(unittest.TestCase):
@@ -14,7 +14,7 @@ class AppTests(unittest.TestCase):
 
     def test_photo_survives_pause_and_mode_change(self):
         with tempfile.TemporaryDirectory() as folder:
-            app = BlinkShot(output=folder)
+            app = BlinkSnap(output=folder)
             app.timer.stop()
             app.save_photo(app.scene)
             saved = app.last_saved
@@ -32,7 +32,7 @@ class AppTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             blocked = Path(folder)/'blocked'
             blocked.write_text('This path is a file')
-            app = BlinkShot(output=blocked)
+            app = BlinkSnap(output=blocked)
             app.timer.stop()
             app.save_photo(app.scene)
             self.assertEqual(app.phase,'error')

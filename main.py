@@ -1,4 +1,4 @@
-"""Blink Shot — a local, two-blink camera for Raven Prism."""
+"""BlinkSnap — a local, two-blink camera for Raven Prism."""
 import math
 import os
 import sys
@@ -75,7 +75,7 @@ class View(QWidget):
         super().__init__()
         self.owner = owner
         self.setFixedSize(600, 470)
-        self.setAccessibleName('Blink Shot viewfinder')
+        self.setAccessibleName('BlinkSnap viewfinder')
 
     def paintEvent(self, event):
         a = self.owner
@@ -88,7 +88,7 @@ class View(QWidget):
             p.setFont(font)
             p.setPen(QColor(color))
             p.drawText(x,y,value)
-        text(8,30,'BLINK SHOT',18,INK,QFont.Weight.DemiBold)
+        text(8,30,'BLINKSNAP',18,INK,QFont.Weight.DemiBold)
         text(402,30,'DEMO' if a.demo else 'CAMERA',13,ACCENT,QFont.Weight.DemiBold)
         p.setPen(QPen(QColor('#354641'),1))
         p.drawLine(8,48,590,48)
@@ -129,7 +129,7 @@ class View(QWidget):
         p.end()
 
 
-class BlinkShot(RavenApp):
+class BlinkSnap(RavenApp):
     def __init__(self, parent=None, device=False, output=None, clock=time.monotonic):
         from raven_framework.helpers.font_utils import load_font_family
         load_font_family("inter")
@@ -138,7 +138,7 @@ class BlinkShot(RavenApp):
         self.demo = True
         self.armed = True
         self.device = device
-        self.output = Path(output or os.getenv('BLINK_SHOT_DIR', str(Path.home()/'Pictures'/'Raven Blink Shot'))).expanduser()
+        self.output = Path(output or os.getenv('BLINKSNAP_DIR', str(Path.home()/'Pictures'/'Raven BlinkSnap'))).expanduser()
         self.detector = BlinkDetector()
         self.scene = demo_image()
         self.photo = None
@@ -304,4 +304,4 @@ if __name__ == '__main__':
     device = '--device' in sys.argv or is_raven_device()
     if '--device' in sys.argv:
         sys.argv.remove('--device')
-    RunApp.run(lambda:BlinkShot(device=device),app_id=os.getenv('RAVEN_APP_ID',''),app_key=os.getenv('RAVEN_APP_KEY',''))
+    RunApp.run(lambda:BlinkSnap(device=device),app_id=os.getenv('RAVEN_APP_ID',''),app_key=os.getenv('RAVEN_APP_KEY',''))

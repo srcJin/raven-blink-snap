@@ -1,32 +1,34 @@
-# Blink Shot
+# BlinkSnap
 
 **Two blinks. One memory.**
 
 A hands-free camera concept for Raven Prism. Two short losses of eye tracking, each followed by recovery, release the shutter. A quiet amber indicator acknowledges the first blink, and a photo preview confirms the capture.
 
-![Blink Shot ready screen](media/01-ready.png)
+![BlinkSnap ready screen](media/01-ready.png)
 
 [Watch the English-narrated simulator demo](media/demo.mp4)
 
-The 37-second demo uses Cartesia narration and actual application frames with simulated input.
+The narrated demo uses Cartesia narration and actual application frames with simulated input.
 
 ## Try it
 
 Python 3.12 is recommended. Install Git and Python, then run these commands from this repository.
 
 ```sh
+git clone https://github.com/srcJin/raven-blink-snap.git
+cd raven-blink-snap
 python3.12 -m venv .venv
 git clone https://github.com/RavenResonance/raven-framework.git
 .venv/bin/python -m pip install -e ./raven-framework
 ./run.sh
 ```
 
-The app opens in the Raven simulator. It starts with an original illustrated demo scene. Press **B** once, wait about a quarter of a second, then press **B** again. Each press simulates a single 130 ms tracking loss. The on-screen **Blink** button does the same thing. Two blinks save a JPEG under `~/Pictures/Raven Blink Shot/`.
+The app opens in the Raven simulator. It starts with an original illustrated demo scene. Press **B** once, wait about a quarter of a second, then press **B** again. Each press simulates a single 130 ms tracking loss. The on-screen **Blink** button does the same thing. Two blinks save a JPEG under `~/Pictures/Raven BlinkSnap/`.
 
 - **Pause / Resume** controls whether gestures can release the shutter.
 - **Use camera** switches to the Raven camera API. On desktop, this accesses the webcam and may require OS permission. The camera opens only when a capture is triggered and closes after the operation.
 - **Use demo** returns to the illustrated scene. Demo files have a `demo-` filename prefix.
-- Set `BLINK_SHOT_DIR` to choose another photo directory.
+- Set `BLINKSNAP_DIR` to choose another photo directory.
 
 ### On Raven hardware
 
